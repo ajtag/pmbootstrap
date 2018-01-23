@@ -70,20 +70,21 @@ def create_device_nodes(args, suffix):
 
         # Verify major and minor numbers of created nodes
         for dev in pmb.config.chroot_device_nodes:
-            stat_result = os.stat(chroot + "/dev/" + str(dev[4]))
+            path = chroot + "/dev/" + str(dev[4])
+            stat_result = os.stat(path)
             rdev = stat_result.st_rdev
-            assert os.major(rdev) == dev[2]
-            assert os.minor(rdev) == dev[3]
+            assert os.major(rdev) == dev[2], "Wrong major in " + path
+            assert os.minor(rdev) == dev[3], "Wrong minor in " + path
 
         # Verify /dev/zero reading and writing
         path = chroot + "/dev/zero"
-        logging.debug("Test device node: " + path)
         with open(path, "r+b", 0) as handle:
-            assert handle.write(bytes([0xff]))
-            assert handle.read(1) == bytes([0x00])
+            assert handle.write(bytes([0xff])), "Write failed for " + path
+            assert handle.read(1) == bytes([0x00]), "Read failed for " + path
 
     # On failure: Show filesystem-related error
     except Exception as e:
+        logging.info(str(e) + "!")
         raise RuntimeError(error)
 
 
